@@ -76,178 +76,139 @@ export default {
     return {
       searchText: "", // Bound to <input> using v-model
       selectedId: null, // Tracks which product is currently selected
-      products: [
-        // Sample dataset to display
-        {
-          id: 1,
-          name: "Apple",
-          price: 1.25,
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
-        },
-        {
-          id: 2,
-          name: "Banana",
-          price: 0.85,
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
-        },
-        {
-          id: 3,
-          name: "Orange",
-          price: 1.1,
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg",
-        },
-      ],
+      products: [],
     };
+  },
+
+  created() {
+    fetch("https://raw.githubusercontent.com/jdecu1/Class_Exercise_Fruits_Project/main/list.json")
+      .then(response => response.json())
+      .then(data => {
+        this.products = data.map((item, index) => ({
+          id: index + 1,
+          ...item,
+          image: this.getImageFor(item.name)
+        }));
+      })
+      .catch(error => console.error("Error loading products:", error));
   },
 
   // ----------------------------
   // Computed Properties
   // ----------------------------
-  // Computed properties are derived from reactive data.
-  // They automatically re-evaluate when their dependencies change.
+  // Computed properties are cached based on their dependencies
+  // and automatically update when dependencies change.
   computed: {
     filteredProducts() {
-      // Convert search text to lowercase for case-insensitive filtering
-      const q = this.searchText.trim().toLowerCase();
-
-      // If input is empty, return the full product list
-      if (!q) return this.products;
-
-      // Otherwise, filter products by matching text
-      return this.products.filter((p) => p.name.toLowerCase().includes(q));
+      return this.products.filter(p =>
+        p.name.toLowerCase().includes(this.searchText.toLowerCase())
+      );
     },
   },
 
   // ----------------------------
-  // Methods (Event Handlers & Helpers)
+  // Methods
   // ----------------------------
+  // Define reusable functions that can be invoked by events
+  // or inside the template.
   methods: {
-    // Called when a product is clicked
+    getImageFor(name) {
+      const images = {
+        Apple: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
+        Banana: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
+        Orange: "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg",
+        Mango: "https://upload.wikimedia.org/wikipedia/commons/9/90/Hapus_Mango.jpg",
+        Dragonfruit: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pitaya_cross_section_ed2.jpg",
+        Grapefruit: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Grapefruit_Slice.jpg",
+        Cantaloupe: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Cantaloupe_and_cross_section.jpg",
+        Plumb: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Plums.jpg",
+        Pear: "https://upload.wikimedia.org/wikipedia/commons/3/32/Pear_DS.jpg",
+        Peach: "https://upload.wikimedia.org/wikipedia/commons/9/9e/Autumn_Red_peaches.jpg"
+      };
+      return images[name] || "https://via.placeholder.com/100";
+    },
+
+    formatPrice(price) {
+      return price.toFixed(2);
+    },
+
     handleSelect(id) {
-      // Toggle selection — clicking the same product again deselects it
-      this.selectedId = this.selectedId === id ? null : id;
+      this.selectedId = id;
     },
-
-    // Helper function: formats a number as a price with 2 decimals
-    formatPrice(n) {
-      return Number(n).toFixed(2);
-    },
-  },
-
-  // ----------------------------
-  // Lifecycle Hook
-  // ----------------------------
-  // created() runs once after component instance is created
-  created() {
-    console.log("App created — products loaded:", this.products.length);
   },
 };
 </script>
 
-<!-- ======================================================
-     STYLES
-     ======================================================
-     Vue Single File Components (SFCs) can have both global
-     and scoped styles.
-     - Global styles: affect the entire app
-     - Scoped styles: apply only to this component
--->
-
-<!-- Global styles (CSS variables, color scheme) -->
-<style>
-:root {
-  --bg: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --card-bg: #ffffff;
-  --focus: #2563eb;
-}
-</style>
-
-<!-- Scoped styles (only affect this component) -->
 <style scoped>
-/* Outer card container */
+/* ======================================================
+   STYLE SECTION
+   ======================================================
+   Scoped styles apply only to this component.
+*/
 .card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  width: min(560px, 95vw);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  color: var(--text);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  background: #fff;
 }
 
-/* Typography styles */
-h2 {
-  margin: 0 0 6px;
-}
 .muted {
-  color: var(--muted);
-  margin: 0 0 12px;
+  color: #666;
+  font-size: 0.9rem;
 }
 
-/* Search input styling */
-input[type="text"] {
+input {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: inherit;
-  outline: none;
-}
-input[type="text"]:focus {
-  border-color: var(--focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent);
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-/* Product list styling */
 .product {
   display: flex;
-  gap: 12px;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px dashed var(--border);
-  padding: 10px 0;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
   cursor: pointer;
-}
-.product:last-child {
-  border-bottom: 0;
+  transition: background 0.2s;
 }
 
-/* Layout for image + text */
+.product:hover {
+  background: #f9f9f9;
+}
+
+.product.selected {
+  border-color: #007bff;
+  background: #e9f5ff;
+}
+
 .left {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
+  display: flex;
   align-items: center;
 }
 
-/* Product images */
-img {
-  width: 56px;
-  height: 56px;
+.left img {
+  width: 50px;
+  height: 50px;
   object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  margin-right: 1rem;
+  border-radius: 4px;
 }
 
-/* Product name and price */
+.meta {
+  display: flex;
+  flex-direction: column;
+}
+
 .name {
-  font-weight: 600;
-}
-.price {
-  color: var(--muted);
+  font-weight: bold;
 }
 
-/* Highlight selected product */
-.selected {
-  background: color-mix(in srgb, var(--focus) 10%, transparent);
-  border-radius: 8px;
-  padding: 6px;
+.price {
+  color: #333;
 }
 </style>
